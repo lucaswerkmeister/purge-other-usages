@@ -9,8 +9,16 @@ user_agent = toolforge.set_user_agent(tool='purge-other-usages',
 
 try:
     wiki_domain = sys.argv[1]
+    entity_id_offset = sys.argv[2]
+    page_id_offset = int(sys.argv[3])
 except IndexError:
-    print(f'Usage: {sys.argv[0]} DOMAIN', file=sys.stderr)
+    print(f'''
+Usage: {sys.argv[0]} DOMAIN ENTITY_ID PAGE_ID
+
+    DOMAIN: e.g. en.wikipedia.org
+    ENTITY_ID: e.g. Q42; set to '' when not continuing
+    PAGE_ID: e.g. 1234; set to 0 when not continuing
+'''.strip(), file=sys.stderr)
     sys.exit(1)
 
 session = mwapi.Session(host=f'https://{wiki_domain}',
@@ -19,5 +27,20 @@ session = mwapi.Session(host=f'https://{wiki_domain}',
 wiki_db = session.get(action='query',
                       meta='siteinfo')['query']['general']['wikiid']
 
-print(wiki_domain)
-print(wiki_db)
+connection = toolforge.connect(wiki_db)
+
+with connection.cursor() as cursor:
+    while True:
+        cursor.execute('''SELECT eu_entity_id, eu_page_id
+                          FROM wbc_entity_usage
+                          WHERE eu_aspect = 'O'
+                          AND (eu_entity_id > %s
+                           OR (eu_entity_id = %s
+                            AND eu_page_id > %s))
+                          ORDER BY eu_entity_id ASC, eu_page_id ASC
+                          LIMIT 500''',
+                       (entity_id_offset, entity_id_offset, page_id_offset))
+        rows = [(entity_id.decode('utf8'), page_id) for entity_id, page_id in cursor.fetchall()]
+        entity_id_offset, page_id_offset = rows[-1]
+        print(f'Processed up to {entity_id_offset}, {page_id_offset}.')
+        break
