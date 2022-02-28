@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import mwapi
+import os
 import sys
 import toolforge
 
@@ -24,8 +25,26 @@ Usage: {sys.argv[0]} DOMAIN ENTITY_ID PAGE_ID
 session = mwapi.Session(host=f'https://{wiki_domain}',
                         user_agent=user_agent)
 
-wiki_db = session.get(action='query',
-                      meta='siteinfo')['query']['general']['wikiid']
+response = session.get(action='query',
+                       meta=['siteinfo', 'tokens'],
+                       siprop=['general'],
+                       type='login')
+login_token = response['query']['tokens']['logintoken']
+wiki_db = response['query']['general']['wikiid']
+
+try:
+    session.post(action='login',
+                 lgname=os.environ['MEDIAWIKI_USERNAME'],
+                 lgpassword=os.environ['MEDIAWIKI_PASSWORD'],
+                 lgtoken=login_token)
+except KeyError:
+    printf(f'''
+MEDIAWIKI_USERNAME or MEDIAWIKI_PASSWORD not found in environment.
+
+You must specify a bot password with the `basic` grant
+in these environment variables.
+'''.strip(), file=sys.stderr)
+    sys.exit(1)
 
 connection = toolforge.connect(wiki_db)
 
