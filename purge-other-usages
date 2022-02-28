@@ -60,7 +60,8 @@ with connection.cursor() as cursor:
                           ORDER BY eu_entity_id ASC, eu_page_id ASC
                           LIMIT 500''',
                        (entity_id_offset, entity_id_offset, page_id_offset))
-        rows = [(entity_id.decode('utf8'), page_id) for entity_id, page_id in cursor.fetchall()]
+        rows = [(entity_id.decode('utf8'), page_id)
+                for entity_id, page_id in cursor.fetchall()]
 
         for chunk in [rows[i:i+30] for i in range(0, len(rows), 30)]:
             page_ids = list(set(page_id for _, page_id in chunk))
