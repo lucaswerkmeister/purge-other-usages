@@ -11,7 +11,6 @@ user_agent = toolforge.set_user_agent(
     email='lucas.werkmeister@wikimedia.de',
 )
 
-
 try:
     wiki_domain = sys.argv[1]
     entity_id_offset = sys.argv[2]
