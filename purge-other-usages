@@ -63,6 +63,9 @@ while True:
                 for entity_id, page_id in cursor.fetchall()]
     connection.close()
 
+    if not rows:
+        break
+
     for chunk in [rows[i:i+30] for i in range(0, len(rows), 30)]:
         page_ids = list(set(page_id for _, page_id in chunk))
         session.post(action='purge',
