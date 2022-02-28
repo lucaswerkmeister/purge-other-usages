@@ -5,8 +5,11 @@ import sys
 import time
 import toolforge
 
-user_agent = toolforge.set_user_agent(tool='purge-other-usages',
-                                      email='lucas.werkmeister@wikimedia.de')
+user_agent = toolforge.set_user_agent(
+    tool='purge-other-usages',
+    url='https://github.com/lucaswerkmeister/purge-other-usages',
+    email='lucas.werkmeister@wikimedia.de',
+)
 
 
 try:
