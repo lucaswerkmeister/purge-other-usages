@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+import mwapi
+import sys
+import toolforge
+
+user_agent = toolforge.set_user_agent(tool='purge-other-usages',
+                                      email='lucas.werkmeister@wikimedia.de')
+
+
+try:
+    wiki_domain = sys.argv[1]
+except IndexError:
+    print(f'Usage: {sys.argv[0]} DOMAIN', file=sys.stderr)
+    sys.exit(1)
+
+session = mwapi.Session(host=f'https://{wiki_domain}',
+                        user_agent=user_agent)
+
+wiki_db = session.get(action='query',
+                      meta='siteinfo')['query']['general']['wikiid']
+
+print(wiki_domain)
+print(wiki_db)
