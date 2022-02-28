@@ -42,5 +42,11 @@ with connection.cursor() as cursor:
                        (entity_id_offset, entity_id_offset, page_id_offset))
         rows = [(entity_id.decode('utf8'), page_id) for entity_id, page_id in cursor.fetchall()]
         entity_id_offset, page_id_offset = rows[-1]
+        page_ids = list(set(page_id for _, page_id in rows))
+
+        for chunk in [page_ids[i:i+50] for i in range(0, len(page_ids), 50)]:
+            session.post(action='purge',
+                         pageids=chunk)
+
         print(f'Processed up to {entity_id_offset}, {page_id_offset}.')
         break
