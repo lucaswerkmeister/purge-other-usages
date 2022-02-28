@@ -66,6 +66,7 @@ with connection.cursor() as cursor:
 
         for chunk in [page_ids[i:i+30] for i in range(0, len(page_ids), 30)]:
             session.post(action='purge',
+                         forcelinkupdate=1,
                          pageids=chunk)
             # rate limit permits 30 purges per 60 seconds, +15s for some buffer
             time.sleep(75)
